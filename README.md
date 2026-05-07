@@ -29,7 +29,7 @@
 
 ### 🚀 Quick Start
 
-Open `sourcecode/DragCodePick.html` directly in any modern browser. No build tools, no dependencies, no server required.
+Open `DragCodePick.html` directly in any modern browser. No build tools, no dependencies, no server required.
 
 ### 🛠️ Usage
 
@@ -78,7 +78,7 @@ All file processing is **client-side only** — no data is ever sent to any serv
 
 ### 🚀 快速开始
 
-直接用浏览器打开 `sourcecode/DragCodePick.html`。无需构建工具，无需依赖，无需服务器。
+直接用浏览器打开 `DragCodePick.html`。无需构建工具，无需依赖，无需服务器。
 
 ### 🛠️ 使用方法
 
