@@ -29,7 +29,7 @@
 
 ### 🚀 Quick Start
 
-Open `sourcecode/DragCodePick.html` directly in any modern browser. No build tools, no dependencies, no server required.
+Open `DragCodePick.html` directly in any modern browser. No build tools, no dependencies, no server required.
 
 ### 🛠️ Usage
 
@@ -44,19 +44,19 @@ Open `sourcecode/DragCodePick.html` directly in any modern browser. No build too
 
 A single-file vanilla HTML/CSS/JS application with zero external dependencies (other than Google Fonts).
 
-| Component | Description |
-|---|---|
-| **CSS** | Dark theme with glassmorphism effects, custom scrollbars, responsive layout |
-| **HTML** | Three tab-sections: Encoding, Extract (3 sub-tabs), CTF |
-| **JS** | FileReader, Uint8Array processing, custom Base32/Base16 encoders, regex-based extraction |
+| Component      | Description                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| **CSS**  | Dark theme with glassmorphism effects, custom scrollbars, responsive layout              |
+| **HTML** | Three tab-sections: Encoding, Extract (3 sub-tabs), CTF                                  |
+| **JS**   | FileReader, Uint8Array processing, custom Base32/Base16 encoders, regex-based extraction |
 
 ### 📋 Supported Patterns
 
-| Category | Types |
-|---|---|
-| **Identity** | IP addresses, phone numbers, Chinese ID cards, email, URLs |
+| Category             | Types                                                                                           |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| **Identity**   | IP addresses, phone numbers, Chinese ID cards, email, URLs                                      |
 | **Credential** | Passwords, API keys, tokens, RSA private keys, JWT, AWS keys, connection strings, Bearer tokens |
-| **Crypto** | AES, DES, RSA, MD5/SHA hashes, HMAC, ECB mode, hex keys |
+| **Crypto**     | AES, DES, RSA, MD5/SHA hashes, HMAC, ECB mode, hex keys                                         |
 
 ### ⚠️ Privacy
 
@@ -78,7 +78,7 @@ All file processing is **client-side only** — no data is ever sent to any serv
 
 ### 🚀 快速开始
 
-直接用浏览器打开 `sourcecode/DragCodePick.html`。无需构建工具，无需依赖，无需服务器。
+直接用浏览器打开 `DragCodePick.html`。无需构建工具，无需依赖，无需服务器。
 
 ### 🛠️ 使用方法
 
@@ -93,19 +93,19 @@ All file processing is **client-side only** — no data is ever sent to any serv
 
 单文件纯原生 HTML/CSS/JS 应用，无外部依赖（仅引用 Google Fonts）。
 
-| 组成部分 | 说明 |
-|---|---|
-| **CSS** | 深色主题，玻璃拟态效果，自定义滚动条，响应式布局 |
-| **HTML** | 三个功能区域：编码转换、信息提取（3 个子标签）、CTF 检测 |
-| **JS** | FileReader + Uint8Array 读取原始字节、自定义 Base32/Base16 编码器、正则匹配提取 |
+| 组成部分       | 说明                                                                            |
+| -------------- | ------------------------------------------------------------------------------- |
+| **CSS**  | 深色主题，玻璃拟态效果，自定义滚动条，响应式布局                                |
+| **HTML** | 三个功能区域：编码转换、信息提取（3 个子标签）、CTF 检测                        |
+| **JS**   | FileReader + Uint8Array 读取原始字节、自定义 Base32/Base16 编码器、正则匹配提取 |
 
 ### 📋 支持的模式
 
-| 类别 | 类型 |
-|---|---|
-| **身份信息** | IP 地址、手机号码、身份证号、电子邮箱、URL |
-| **凭证** | 密码、API 密钥、Token、RSA 私钥、JWT、AWS 密钥、连接字符串、Bearer Token |
-| **加密** | AES、DES、RSA、MD5/SHA 哈希、HMAC、ECB 模式、Hex 密钥 |
+| 类别               | 类型                                                                     |
+| ------------------ | ------------------------------------------------------------------------ |
+| **身份信息** | IP 地址、手机号码、身份证号、电子邮箱、URL                               |
+| **凭证**     | 密码、API 密钥、Token、RSA 私钥、JWT、AWS 密钥、连接字符串、Bearer Token |
+| **加密**     | AES、DES、RSA、MD5/SHA 哈希、HMAC、ECB 模式、Hex 密钥                    |
 
 ### ⚠️ 隐私说明
 
