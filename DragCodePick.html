@@ -273,6 +273,149 @@
             display: block;
         }
 
+        .quick-decode {
+            margin-top: 20px;
+            background: rgba(15, 23, 42, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 24px;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .quick-decode.dragover {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(59, 130, 246, 0.06);
+        }
+
+        .quick-decode-title {
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .quick-decode-input {
+            width: 100%;
+            height: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            resize: vertical;
+            outline: none;
+            background: rgba(0, 0, 0, 0.3);
+            color: #a5f3fc;
+        }
+
+        .quick-decode-input:focus {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .quick-decode-input::placeholder {
+            color: #475569;
+        }
+
+        .quick-decode-drop-hint {
+            color: #475569;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .qd-decode-btn {
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .qd-ext-row {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .qd-ext-prefix {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 0 10px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .qd-ext-input {
+            width: 80px;
+            padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 0 8px 8px 0;
+            background: rgba(0, 0, 0, 0.3);
+            color: #a5f3fc;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .qd-ext-input:focus {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .qd-ext-input::placeholder {
+            color: #475569;
+        }
+
+        .quick-decode-result {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .quick-decode-preview {
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            overflow: auto;
+            max-height: 300px;
+        }
+
+        .quick-decode-preview img {
+            display: block;
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        .quick-decode-preview pre {
+            padding: 16px;
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            white-space: pre-wrap;
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .quick-decode-meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .quick-decode-meta span {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
         .result-section {
             margin-top: 32px;
             display: none;
@@ -786,6 +929,25 @@
 
         <input type="file" id="fileInput">
 
+        <div class="quick-decode" id="quickDecode">
+            <h2 class="quick-decode-title" data-i18n="qdTitle">Base64 快速解码</h2>
+            <textarea class="quick-decode-input" id="qdInput" data-i18n-placeholder="qdPlaceholder" placeholder="在此粘贴 Base64 编码内容..."></textarea>
+            <p class="quick-decode-drop-hint" data-i18n="qdDropHint">或将 Base64 文本文件拖拽到此区域</p>
+            <button class="btn btn-primary qd-decode-btn" id="qdDecodeBtn" data-i18n="qdDecode">解码</button>
+            <div class="quick-decode-result" id="qdResult">
+                <div class="quick-decode-preview" id="qdPreview"></div>
+                <div class="quick-decode-meta" id="qdMeta"></div>
+                <div class="btn-group" id="qdActions" style="display:none">
+                    <button class="btn btn-secondary" id="qdCopyBtn" data-i18n="qdCopyText">复制文本</button>
+                    <div class="qd-ext-row" id="qdExtRow" style="display:none">
+                        <span class="qd-ext-prefix">.</span>
+                        <input class="qd-ext-input" id="qdExtInput" placeholder="ext" maxlength="12">
+                    </div>
+                    <button class="btn btn-primary" id="qdDownloadBtn" data-i18n="qdDownloadFile">下载文件</button>
+                </div>
+            </div>
+        </div>
+
         <div class="result-section" id="resultSection">
             <div class="file-info">
                 <div class="file-info-item">
@@ -1175,8 +1337,21 @@
         const extractOptionsIdentity = document.getElementById('extractOptionsIdentity');
         const extractOptionsCredential = document.getElementById('extractOptionsCredential');
         const extractOptionsCrypto = document.getElementById('extractOptionsCrypto');
+        const quickDecode = document.getElementById('quickDecode');
+        const qdInput = document.getElementById('qdInput');
+        const qdDecodeBtn = document.getElementById('qdDecodeBtn');
+        const qdResult = document.getElementById('qdResult');
+        const qdPreview = document.getElementById('qdPreview');
+        const qdMeta = document.getElementById('qdMeta');
+        const qdActions = document.getElementById('qdActions');
+        const qdCopyBtn = document.getElementById('qdCopyBtn');
+        const qdDownloadBtn = document.getElementById('qdDownloadBtn');
+        const qdExtRow = document.getElementById('qdExtRow');
+        const qdExtInput = document.getElementById('qdExtInput');
 
         let currentEncoding = 'base64';
+        let qdDecodedBytes = null;
+        let qdDecodedMime = null;
         let currentResult = { base64: '', base32: '', base16: '' };
         let rawText = '';
         let selectedExtractTypes = ['ip', 'phone', 'idcard', 'email', 'url'];
@@ -1274,6 +1449,18 @@
             extractExportIdentity: { zh: '身份信息提取结果', en: 'IDENTITY EXTRACTION RESULT' },
             extractExportCredential: { zh: '凭据信息提取结果', en: 'CREDENTIAL EXTRACTION RESULT' },
             extractExportCrypto: { zh: '加密算法提取结果', en: 'CRYPTO EXTRACTION RESULT' },
+            qdTitle: { zh: 'Base64 快速解码', en: 'Base64 Quick Decode' },
+            qdPlaceholder: { zh: '在此粘贴 Base64 编码内容...', en: 'Paste Base64-encoded content here...' },
+            qdDecode: { zh: '解码', en: 'Decode' },
+            qdCopyText: { zh: '复制文本', en: 'Copy Text' },
+            qdDownloadFile: { zh: '下载文件', en: 'Download File' },
+            qdBinaryInfo: { zh: '二进制文件', en: 'Binary File' },
+            qdNoInput: { zh: '请先粘贴 Base64 内容', en: 'Please paste Base64 content first' },
+            qdDecodeFail: { zh: 'Base64 解码失败，请检查输入内容', en: 'Base64 decode failed, please check your input' },
+            qdSize: { zh: '大小', en: 'Size' },
+            qdType: { zh: '类型', en: 'Type' },
+            qdDropHint: { zh: '或将 Base64 文本文件拖拽到此区域', en: 'or drop a Base64 text file here' },
+            qdExtPlaceholder: { zh: '后缀', en: 'ext' },
         };
 
         function t(key, replacements) {
@@ -1552,6 +1739,69 @@
         resetBtn2.addEventListener('click', reset);
         resetBtn3.addEventListener('click', reset);
 
+        qdDecodeBtn.addEventListener('click', decodeBase64Input);
+
+        qdCopyBtn.addEventListener('click', () => {
+            if (!qdDecodedBytes) return;
+            const text = new TextDecoder().decode(qdDecodedBytes);
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(t('toastCopied'));
+            }).catch(() => showToast(t('toastCopyFail')));
+        });
+
+        qdDownloadBtn.addEventListener('click', () => {
+            if (!qdDecodedBytes) return;
+            const knownExt = getExtension(qdDecodedMime);
+            let ext;
+            if (knownExt === '.bin') {
+                const userExt = qdExtInput.value.trim().replace(/^\./, '');
+                ext = userExt ? '.' + userExt : '.bin';
+            } else {
+                ext = knownExt;
+            }
+            const filename = 'decoded' + ext;
+            downloadFile(qdDecodedBytes, filename, qdDecodedMime);
+        });
+
+        qdExtInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                qdDownloadBtn.click();
+            }
+        });
+
+        qdInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                decodeBase64Input();
+            }
+        });
+
+        quickDecode.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            quickDecode.classList.add('dragover');
+        });
+
+        quickDecode.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            quickDecode.classList.remove('dragover');
+        });
+
+        quickDecode.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            quickDecode.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    qdInput.value = ev.target.result;
+                    decodeBase64Input();
+                };
+                reader.readAsText(file);
+            }
+        });
+
         function reset() {
             resultSection.classList.remove('show');
             fileInput.value = '';
@@ -1785,14 +2035,160 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
+        // Quick Decode helpers
+        const MIME_MAGIC = [
+            { bytes: [0x89, 0x50, 0x4E, 0x47], mime: 'image/png' },
+            { bytes: [0xFF, 0xD8, 0xFF], mime: 'image/jpeg' },
+            { bytes: [0x47, 0x49, 0x46, 0x38], mime: 'image/gif' },
+            { bytes: [0x52, 0x49, 0x46, 0x46], mime: 'image/webp' },
+            { bytes: [0x25, 0x50, 0x44, 0x46], mime: 'application/pdf' },
+            { bytes: [0x50, 0x4B, 0x03, 0x04], mime: 'application/zip' },
+            { bytes: [0x49, 0x44, 0x33], mime: 'audio/mpeg' },
+            { bytes: [0xFF, 0xFB], mime: 'audio/mpeg' },
+            { bytes: [0x42, 0x4D], mime: 'image/bmp' },
+        ];
+
+        const MIME_EXT = {
+            'image/png': '.png', 'image/jpeg': '.jpg', 'image/gif': '.gif',
+            'image/webp': '.webp', 'image/bmp': '.bmp',
+            'application/pdf': '.pdf', 'application/zip': '.zip',
+            'audio/mpeg': '.mp3', 'text/plain': '.txt',
+            'text/html': '.html', 'application/json': '.json',
+            'application/xml': '.xml', 'text/xml': '.xml',
+            'application/octet-stream': '.bin',
+        };
+
+        function detectMimeType(uint8Array) {
+            for (const magic of MIME_MAGIC) {
+                if (uint8Array.length >= magic.bytes.length) {
+                    let match = true;
+                    for (let i = 0; i < magic.bytes.length; i++) {
+                        if (uint8Array[i] !== magic.bytes[i]) { match = false; break; }
+                    }
+                    if (match) {
+                        if (magic.mime === 'image/webp' && uint8Array.length >= 12) {
+                            const subtype = new TextDecoder().decode(uint8Array.slice(8, 12));
+                            if (subtype === 'WEBP') return 'image/webp';
+                            if (subtype === 'WAVE') return 'audio/wav';
+                            continue;
+                        }
+                        return magic.mime;
+                    }
+                }
+            }
+            if (isTextContent(uint8Array)) {
+                const text = new TextDecoder().decode(uint8Array.slice(0, 200));
+                if (/^\s*[<]!DOCTYPE\s+html/i.test(text) || /^\s*[<]html/i.test(text)) return 'text/html';
+                if (/^\s*[<][?]xml/i.test(text) || /^\s*[<][\w-]+[:\s][^>]*xmlns/i.test(text)) return 'application/xml';
+                if (/^\s*[\[{]/.test(text)) return 'application/json';
+                return 'text/plain';
+            }
+            return 'application/octet-stream';
+        }
+
+        function isTextContent(uint8Array) {
+            const len = uint8Array.length;
+            if (len === 0) return true;
+            let nonPrintable = 0;
+            const threshold = len * 0.05;
+            for (let i = 0; i < len; i++) {
+                const b = uint8Array[i];
+                if (b === 0) { nonPrintable++; if (nonPrintable > threshold) return false; continue; }
+                if (b < 0x09 || (b > 0x0D && b < 0x20) || b === 0x7F) { nonPrintable++; if (nonPrintable > threshold) return false; }
+            }
+            return true;
+        }
+
+        function getExtension(mimeType) {
+            return MIME_EXT[mimeType] || '.bin';
+        }
+
+        function uint8ToBinaryStr(uint8Array) {
+            const chunkSize = 8192;
+            let result = '';
+            for (let i = 0; i < uint8Array.length; i += chunkSize) {
+                result += String.fromCharCode.apply(null, uint8Array.subarray(i, i + chunkSize));
+            }
+            return result;
+        }
+
+        function decodeBase64Input() {
+            const input = qdInput.value.trim();
+            if (!input) { showToast(t('qdNoInput')); return; }
+
+            let base64 = input;
+            let declaredType = null;
+
+            const dataUriMatch = base64.match(/^data:([^;]*)(;base64)?,/i);
+            if (dataUriMatch) {
+                declaredType = dataUriMatch[1];
+                base64 = base64.slice(dataUriMatch[0].length);
+            }
+
+            try {
+                const binaryStr = atob(base64);
+                const bytes = new Uint8Array(binaryStr.length);
+                for (let i = 0; i < binaryStr.length; i++) {
+                    bytes[i] = binaryStr.charCodeAt(i);
+                }
+                renderPreview(bytes, declaredType, input);
+            } catch (e) {
+                showToast(t('qdDecodeFail'));
+                qdResult.style.display = 'none';
+            }
+        }
+
+        function renderPreview(bytes, declaredType, originalInput) {
+            const mimeType = declaredType || detectMimeType(bytes);
+            const isImage = mimeType.startsWith('image/');
+            const isText = mimeType === 'text/plain' || mimeType === 'application/json' ||
+                           mimeType === 'text/html' || mimeType === 'application/xml' || mimeType === 'text/xml';
+            const sizeStr = formatFileSize(bytes.length);
+            const knownExt = getExtension(mimeType);
+            const isUnknown = mimeType === 'application/octet-stream';
+
+            qdDecodedBytes = bytes;
+            qdDecodedMime = mimeType;
+
+            qdPreview.innerHTML = '';
+
+            if (isImage) {
+                const img = document.createElement('img');
+                img.src = declaredType ? originalInput : 'data:' + mimeType + ';base64,' + btoa(uint8ToBinaryStr(bytes));
+                qdPreview.appendChild(img);
+            } else if (isText) {
+                const pre = document.createElement('pre');
+                pre.textContent = new TextDecoder().decode(bytes);
+                qdPreview.appendChild(pre);
+            }
+
+            qdPreview.style.display = isImage || isText ? 'block' : 'none';
+            qdMeta.innerHTML = '<span data-i18n="qdType">' + t('qdType') + '</span>: ' + mimeType +
+                               '  <span data-i18n="qdSize">' + t('qdSize') + '</span>: ' + sizeStr;
+
+            qdCopyBtn.style.display = isText ? '' : 'none';
+
+            if (isUnknown) {
+                qdExtRow.style.display = 'flex';
+                qdExtInput.value = '';
+                qdExtInput.focus();
+            } else {
+                qdExtRow.style.display = 'none';
+            }
+
+            qdActions.style.display = 'flex';
+            qdResult.style.display = 'block';
+        }
+
         function showToast(message) {
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 2000);
         }
 
-        function downloadFile(content, filename) {
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        function downloadFile(content, filename, mimeType) {
+            const type = mimeType || 'text/plain;charset=utf-8';
+            const blob = new Blob([content], { type: type });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
