@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件编码与字符串提取工具</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #0f1117 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            background: linear-gradient(180deg, rgba(30, 35, 50, 0.95) 0%, rgba(20, 23, 35, 0.98) 100%);
+            border: 1px solid rgba(99, 179, 237, 0.15);
+            border-radius: 20px;
+            padding: 48px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow:
+                0 25px 80px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                0 0 100px rgba(99, 179, 237, 0.03);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        h1 {
+            color: #f1f5f9;
+            margin-bottom: 8px;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(99, 179, 237, 0.3);
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(15, 23, 42, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .drop-zone:hover::before {
+            opacity: 1;
+        }
+
+        .drop-zone:hover {
+            border-color: rgba(99, 179, 237, 0.5);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        .drop-zone.dragover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            transform: scale(1.01);
+        }
+
+        .drop-zone-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone:hover .drop-zone-icon {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
+        }
+
+        .drop-zone-icon svg {
+            width: 24px;
+            height: 24px;
+            color: #63b3ed;
+        }
+
+        .drop-zone-text {
+            color: #e2e8f0;
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .drop-zone-hint {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .main-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .main-tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .main-tab svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .main-tab:hover {
+            color: #94a3b8;
+        }
+
+        .main-tab.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .main-tab.ctf.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .encoding-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .encoding-tab {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.5);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.2s ease;
+        }
+
+        .encoding-tab:hover {
+            border-color: rgba(99, 179, 237, 0.3);
+            color: #94a3b8;
+        }
+
+        .encoding-tab.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: #63b3ed;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .result-section {
+            margin-top: 32px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .file-info {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .file-info-item {
+            text-align: center;
+        }
+
+        .file-info-label {
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .file-info-value {
+            color: #e2e8f0;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .output-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .output-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        .output-length {
+            font-size: 12px;
+            color: #64748b;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .base64-output {
+            width: 100%;
+            height: 180px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            background: rgba(0, 0, 0, 0.3);
+            color: #a5f3fc;
+            transition: all 0.2s ease;
+        }
+
+        .base64-output:focus {
+            border-color: rgba(99, 179, 237, 0.4);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .base64-output::placeholder {
+            color: #475569;
+        }
+
+        .format-note {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 10px;
+        }
+
+        .extract-section {
+            margin-top: 20px;
+        }
+
+        .extract-options {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .extract-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            user-select: none;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .extract-option:hover {
+            border-color: rgba(99, 179, 237, 0.2);
+        }
+
+        .extract-option.selected {
+            border-color: rgba(99, 179, 237, 0.4);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .extract-option input {
+            display: none;
+        }
+
+        .extract-option .checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #475569;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .extract-option.selected .checkbox {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            border-color: transparent;
+        }
+
+        .extract-option.selected .checkbox svg {
+            width: 12px;
+            height: 12px;
+            color: white;
+        }
+
+        .extract-option .label {
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .extract-option.selected .label {
+            color: #e2e8f0;
+        }
+
+        .result-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        .result-count {
+            font-size: 11px;
+            color: #0a0a0f;
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .extract-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .extract-items::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .extract-items::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .extract-items::-webkit-scrollbar-thumb {
+            background: rgba(99, 179, 237, 0.3);
+            border-radius: 3px;
+        }
+
+        .extract-item {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #63b3ed;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .extract-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(99, 179, 237, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .extract-item.flag {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(217, 70, 239, 0.15) 100%);
+            border-color: rgba(139, 92, 246, 0.3);
+            color: #c4b5fd;
+        }
+
+        .extract-item.flag:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(217, 70, 239, 0.25) 100%);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .extract-empty {
+            color: #475569;
+            font-size: 13px;
+            text-align: center;
+            padding: 32px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.3);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+
+        .btn-ctf {
+            background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+        }
+
+        .btn-ctf:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            padding: 14px 24px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 10px;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .ctf-hint {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(217, 70, 239, 0.1) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #a78bfa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ctf-hint svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .ctf-hint strong {
+            color: #c4b5fd;
+        }
+
+        .extract-category {
+            margin-bottom: 16px;
+        }
+
+        .extract-category:last-child {
+            margin-bottom: 0;
+        }
+
+        .extract-category-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .extract-category-title::before {
+            content: '';
+            width: 3px;
+            height: 12px;
+            background: linear-gradient(180deg, #3b82f6 0%, #06b6d4 100%);
+            border-radius: 2px;
+        }
+
+        .extract-category.flags .extract-category-title::before {
+            background: linear-gradient(180deg, #8b5cf6 0%, #d946ef 100%);
+        }
+
+        .extract-category-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .extract-tab {
+            padding: 10px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.5);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.2s ease;
+        }
+
+        .extract-tab:hover {
+            border-color: rgba(99, 179, 237, 0.3);
+            color: #94a3b8;
+        }
+
+        .extract-tab.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: #63b3ed;
+        }
+
+        .extract-item.credential {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+
+        .extract-item.credential:hover {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.5);
+        }
+
+        .extract-item.internal {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .extract-item.internal:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .extract-item.special {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #c084fc;
+        }
+
+        .extract-item.special:hover {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+
+        .extract-item.crypto {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: #4ade80;
+        }
+
+        .extract-item.crypto:hover {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+            margin: 24px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h1>File Encoding Toolkit</h1>
+            <p class="subtitle">文件编码转换与字符串提取工具</p>
+        </div>
+
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+            </div>
+            <p class="drop-zone-text">拖拽文件到此处</p>
+            <p class="drop-zone-hint">或点击选择文件</p>
+        </div>
+
+        <input type="file" id="fileInput">
+
+        <div class="result-section" id="resultSection">
+            <div class="file-info">
+                <div class="file-info-item">
+                    <div class="file-info-label">文件名</div>
+                    <div class="file-info-value" id="fileName">-</div>
+                </div>
+                <div class="file-info-item">
+                    <div class="file-info-label">类型</div>
+                    <div class="file-info-value" id="fileType">-</div>
+                </div>
+                <div class="file-info-item">
+                    <div class="file-info-label">大小</div>
+                    <div class="file-info-value" id="fileSize">-</div>
+                </div>
+            </div>
+
+            <div class="main-tabs">
+                <button class="main-tab active" data-section="encoding">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    编码转换
+                </button>
+                <button class="main-tab" data-section="extract">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    字符串提取
+                </button>
+                <button class="main-tab ctfs" data-section="ctf">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    CTF Flag
+                </button>
+            </div>
+
+            <div class="section active" id="encodingSection">
+                <div class="encoding-tabs">
+                    <button class="encoding-tab active" data-encoding="base64">Base64</button>
+                    <button class="encoding-tab" data-encoding="base32">Base32</button>
+                    <button class="encoding-tab" data-encoding="base16">Hex</button>
+                </div>
+
+                <div class="output-card">
+                    <div class="output-header">
+                        <span class="output-label" id="outputLabel">Base64 编码</span>
+                        <span class="output-length" id="outputLength">0 字符</span>
+                    </div>
+                    <textarea class="base64-output" id="base64Output" readonly placeholder="$ 输出结果将显示在此..."></textarea>
+                    <p class="format-note" id="formatNote">* 输出包含 data URI 前缀</p>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="copyBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        复制结果
+                    </button>
+                    <button class="btn btn-primary" id="exportEncodingBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        导出文件
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="resetBtn">重置</button>
+                </div>
+            </div>
+
+            <div class="section" id="extractSection">
+                <div class="extract-tabs" style="display:flex;gap:8px;margin-bottom:16px;">
+                    <button class="extract-tab active" data-extract-mode="identity">身份信息</button>
+                    <button class="extract-tab" data-extract-mode="credential">密码/密钥</button>
+                    <button class="extract-tab" data-extract-mode="crypto">加密算法</button>
+                </div>
+
+                <div class="extract-options" id="extractOptionsIdentity">
+                    <label class="extract-option selected" data-type="ip">
+                        <input type="checkbox" name="extractType" value="ip" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">IP 地址</span>
+                    </label>
+                    <label class="extract-option selected" data-type="phone">
+                        <input type="checkbox" name="extractType" value="phone" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">手机号码</span>
+                    </label>
+                    <label class="extract-option selected" data-type="idcard">
+                        <input type="checkbox" name="extractType" value="idcard" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">身份证号码</span>
+                    </label>
+                    <label class="extract-option selected" data-type="email">
+                        <input type="checkbox" name="extractType" value="email" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">电子邮箱</span>
+                    </label>
+                    <label class="extract-option selected" data-type="url">
+                        <input type="checkbox" name="extractType" value="url" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">URL 地址</span>
+                    </label>
+                </div>
+
+                <div class="extract-options" id="extractOptionsCredential" style="display:none;">
+                    <label class="extract-option selected" data-type="password">
+                        <input type="checkbox" name="extractType" value="password" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">密码</span>
+                    </label>
+                    <label class="extract-option selected" data-type="apikey">
+                        <input type="checkbox" name="extractType" value="apikey" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">API 密钥</span>
+                    </label>
+                    <label class="extract-option selected" data-type="token">
+                        <input type="checkbox" name="extractType" value="token" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">Token</span>
+                    </label>
+                    <label class="extract-option selected" data-type="privatekey">
+                        <input type="checkbox" name="extractType" value="privatekey" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">私钥/证书</span>
+                    </label>
+                    <label class="extract-option selected" data-type="jwt">
+                        <input type="checkbox" name="extractType" value="jwt" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">JWT Token</span>
+                    </label>
+                    <label class="extract-option selected" data-type="awskey">
+                        <input type="checkbox" name="extractType" value="awskey" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">AWS Key</span>
+                    </label>
+                    <label class="extract-option selected" data-type="connectionstring">
+                        <input type="checkbox" name="extractType" value="connectionstring" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">连接字符串</span>
+                    </label>
+                    <label class="extract-option selected" data-type="bearertoken">
+                        <input type="checkbox" name="extractType" value="bearertoken" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">Bearer Token</span>
+                    </label>
+                </div>
+
+                <div class="extract-options" id="extractOptionsCrypto" style="display:none;">
+                    <label class="extract-option selected" data-type="aes">
+                        <input type="checkbox" name="extractType" value="aes" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">AES</span>
+                    </label>
+                    <label class="extract-option selected" data-type="des">
+                        <input type="checkbox" name="extractType" value="des" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">DES/3DES</span>
+                    </label>
+                    <label class="extract-option selected" data-type="rsa">
+                        <input type="checkbox" name="extractType" value="rsa" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">RSA</span>
+                    </label>
+                    <label class="extract-option selected" data-type="hash">
+                        <input type="checkbox" name="extractType" value="hash" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">哈希算法</span>
+                    </label>
+                    <label class="extract-option selected" data-type="hmac">
+                        <input type="checkbox" name="extractType" value="hmac" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">HMAC</span>
+                    </label>
+                    <label class="extract-option selected" data-type="ecb">
+                        <input type="checkbox" name="extractType" value="ecb" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">ECB 模式</span>
+                    </label>
+                    <label class="extract-option selected" data-type="hexkey">
+                        <input type="checkbox" name="extractType" value="hexkey" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">Hex 密钥</span>
+                    </label>
+                    <label class="extract-option selected" data-type="md5hash">
+                        <input type="checkbox" name="extractType" value="md5hash" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">MD5 哈希</span>
+                    </label>
+                    <label class="extract-option selected" data-type="sha">
+                        <input type="checkbox" name="extractType" value="sha" checked>
+                        <span class="checkbox">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </span>
+                        <span class="label">SHA 哈希</span>
+                    </label>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-title">提取结果</span>
+                        <span class="result-count" id="extractCount">0</span>
+                    </div>
+                    <div class="extract-items" id="extractItems">
+                        <div class="extract-empty">选择提取类型后自动处理文件</div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="copyExtractBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        复制结果
+                    </button>
+                    <button class="btn btn-primary" id="exportExtractBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        导出文件
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="resetBtn2">重置</button>
+                </div>
+            </div>
+
+            <div class="section" id="ctfSection">
+                <div class="ctf-hint">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>自动搜索 CTF Flag 格式及敏感关键词：<strong>flag{...}</strong>、<strong>password</strong>、<strong>secret</strong>、<strong>token</strong> 等</span>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-title">CTF 相关结果</span>
+                        <span class="result-count" id="ctfCount">0</span>
+                    </div>
+                    <div id="ctfItems">
+                        <div class="extract-empty">拖拽或选择文件后自动检测</div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-ctf" id="copyCtfBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        复制 Flag
+                    </button>
+                    <button class="btn btn-ctf" id="exportCtfBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        导出文件
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="resetBtn3">重置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">已复制到剪贴板</div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const resultSection = document.getElementById('resultSection');
+        const base64Output = document.getElementById('base64Output');
+        const fileName = document.getElementById('fileName');
+        const fileType = document.getElementById('fileType');
+        const fileSize = document.getElementById('fileSize');
+        const outputLength = document.getElementById('outputLength');
+        const outputLabel = document.getElementById('outputLabel');
+        const formatNote = document.getElementById('formatNote');
+        const copyBtn = document.getElementById('copyBtn');
+        const exportEncodingBtn = document.getElementById('exportEncodingBtn');
+        const copyExtractBtn = document.getElementById('copyExtractBtn');
+        const exportExtractBtn = document.getElementById('exportExtractBtn');
+        const copyCtfBtn = document.getElementById('copyCtfBtn');
+        const exportCtfBtn = document.getElementById('exportCtfBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const resetBtn2 = document.getElementById('resetBtn2');
+        const resetBtn3 = document.getElementById('resetBtn3');
+        const toast = document.getElementById('toast');
+        const encodingTabs = document.querySelectorAll('.encoding-tab');
+        const mainTabs = document.querySelectorAll('.main-tab');
+        const sections = document.querySelectorAll('.section');
+        const extractOptions = document.querySelectorAll('.extract-option');
+        const extractItems = document.getElementById('extractItems');
+        const extractCount = document.getElementById('extractCount');
+        const ctfItems = document.getElementById('ctfItems');
+        const ctfCount = document.getElementById('ctfCount');
+        const extractTabs = document.querySelectorAll('.extract-tab');
+        const extractOptionsIdentity = document.getElementById('extractOptionsIdentity');
+        const extractOptionsCredential = document.getElementById('extractOptionsCredential');
+        const extractOptionsCrypto = document.getElementById('extractOptionsCrypto');
+
+        let currentEncoding = 'base64';
+        let currentResult = { base64: '', base32: '', base16: '' };
+        let rawText = '';
+        let selectedExtractTypes = ['ip', 'phone', 'idcard', 'email', 'url'];
+        let ctfResults = [];
+
+        const BASE16_CHARS = '0123456789ABCDEF';
+        const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
+        const EXTRACT_PATTERNS = {
+            ip: /\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/g,
+            phone: /\b1[3-9]\d{9}\b/g,
+            idcard: /\b[1-9]\d{5}(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[\dXx]\b/g,
+            email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+            url: /https?:\/\/[^\s<>"']+/gi,
+            password: /password[:\s=]*[^\s<>\"']{3,}/gi,
+            apikey: /(?:api[_-]?key|apikey)[:\s=]*[^\s<>\"']{8,}/gi,
+            token: /(?:token|bearer)[:\s=]*[^\s<>\"']{10,}/gi,
+            privatekey: /-----BEGIN\s+(?:RSA\s+)?PRIVATE\s+KEY-----[\s\S]+?-----END\s+(?:RSA\s+)?PRIVATE\s+KEY-----/gi,
+            jwt: /eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/g,
+            awskey: /(?:AKIA|ABIA|ACCA|ASIA)[0-9A-Z]{16}/g,
+            connectionstring: /(?:mongodb|mysql|postgres|redis|amqp|amazons3|azureblob):\/\/[^\s<>\"']+/gi,
+            bearertoken: /Bearer\s+[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+/gi,
+            aes: /\bAES[-_]?(?:128|192|256)[-_]?(?:ECB|CBC|CFB|OFB|CTR|GCM|CCM)?\b/gi,
+            des: /\b(?:DES|3DES|TripleDES|DES3)[-_]?(?:ECB|CBC|CFB|OFB)?\b/gi,
+            rsa: /\bRSA[-_]?(?:1024|2048|4096)?\b/gi,
+            hash: /\b(?:MD5|SHA-?1|SHA-?256|SHA-?512|SHA3-?256|SHA3-?512|BLAKE2|BLAKE3)[:\s]*[a-fA-F0-9]{16,}/gi,
+            hmac: /\bHMAC[-_]?(?:MD5|SHA-?1|SHA-?256|SHA-?512)?\b/gi,
+            ecb: /\bECB[-_]?mode\b/gi,
+            hexkey: /\b(?:key|secret|password|passwd|pwd)[:\s=]*[a-fA-F0-9]{8,}\b/gi,
+            md5hash: /\b[a-fA-F0-9]{32}\b/g,
+            sha: /\b[a-fA-F0-9]{40}\b|\b[a-fA-F0-9]{64}\b/g
+        };
+
+        const CTF_PATTERNS = {
+            flag: { pattern: /flag\{[^\}]+\}/gi, label: 'FLAG', isFlag: true },
+            flagUpper: { pattern: /FLAG\{[^\}]+\}/g, label: 'FLAG', isFlag: true },
+            cctf: { pattern: /CCTF\{[^\}]+\}/gi, label: 'CCTF', isFlag: true },
+            secu: { pattern: /Secu\{[^\}]+\}/gi, label: 'SECU', isFlag: true },
+            DUCTF: { pattern: /DUCTF\{[^\}]+\}/gi, label: 'DUCTF', isFlag: true },
+            hemp: { pattern: /hemp\{[^\}]+\}/gi, label: 'HEMP', isFlag: true },
+            telescope: { pattern: /Telescope\{[^\}]+\}/gi, label: 'TELESCOPE', isFlag: true },
+            osint: { pattern: /osint\{[^\}]+\}/gi, label: 'OSINT', isFlag: true },
+            crypto: { pattern: /crypto\{[^\}]+\}/gi, label: 'CRYPTO', isFlag: true },
+            password: { pattern: /password[:\s=]*[^\s<>\"']{3,}/gi, label: 'PASSWORD', isFlag: false },
+            secret: { pattern: /secret[:\s=]*[^\s<>\"']{3,}/gi, label: 'SECRET', isFlag: false },
+            token: { pattern: /token[:\s=]*[^\s<>\"']{3,}/gi, label: 'TOKEN', isFlag: false },
+            key: { pattern: /key[:\s=]*[^\s<>\"']{3,}/gi, label: 'KEY', isFlag: false },
+            api: { pattern: /api[_-]?key[:\s=]*[^\s<>\"']{3,}/gi, label: 'API_KEY', isFlag: false },
+            hint: { pattern: /hint[:\s=]*[^\s<>\"']{3,}/gi, label: 'HINT', isFlag: false },
+            base64: { pattern: /[A-Za-z0-9+/]{20,}={0,2}/g, label: 'BASE64', isFlag: false },
+            hexString: { pattern: /(?:0x)?[0-9a-fA-F]{8,}/g, label: 'HEX', isFlag: false }
+        };
+
+        mainTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                mainTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const targetSection = tab.dataset.section;
+                sections.forEach(s => {
+                    s.classList.remove('active');
+                    if (s.id === targetSection + 'Section') s.classList.add('active');
+                });
+            });
+        });
+
+        encodingTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                encodingTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentEncoding = tab.dataset.encoding;
+                updateOutput();
+            });
+        });
+
+        extractOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                option.classList.toggle('selected');
+                const type = option.dataset.type;
+                const checkbox = option.querySelector('input');
+                checkbox.checked = !checkbox.checked;
+                if (selectedExtractTypes.includes(type)) {
+                    selectedExtractTypes = selectedExtractTypes.filter(t => t !== type);
+                } else {
+                    selectedExtractTypes.push(type);
+                }
+                updateExtractResult();
+            });
+        });
+
+        extractTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                extractTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const mode = tab.dataset.extractMode;
+                if (mode === 'identity') {
+                    extractOptionsIdentity.style.display = 'flex';
+                    extractOptionsCredential.style.display = 'none';
+                    extractOptionsCrypto.style.display = 'none';
+                    selectedExtractTypes = ['ip', 'phone', 'idcard', 'email', 'url'];
+                } else if (mode === 'credential') {
+                    extractOptionsIdentity.style.display = 'none';
+                    extractOptionsCredential.style.display = 'flex';
+                    extractOptionsCrypto.style.display = 'none';
+                    selectedExtractTypes = ['password', 'apikey', 'token', 'privatekey', 'jwt', 'awskey', 'connectionstring', 'bearertoken'];
+                } else {
+                    extractOptionsIdentity.style.display = 'none';
+                    extractOptionsCredential.style.display = 'none';
+                    extractOptionsCrypto.style.display = 'flex';
+                    selectedExtractTypes = ['aes', 'des', 'rsa', 'hash', 'hmac', 'ecb', 'hexkey', 'md5hash', 'sha'];
+                }
+                document.querySelectorAll('.extract-option').forEach(opt => {
+                    const type = opt.dataset.type;
+                    if (selectedExtractTypes.includes(type)) {
+                        opt.classList.add('selected');
+                        opt.querySelector('input').checked = true;
+                    } else {
+                        opt.classList.remove('selected');
+                        opt.querySelector('input').checked = false;
+                    }
+                });
+                updateExtractResult();
+            });
+        });
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(base64Output.value);
+                showToast('已复制到剪贴板');
+            } catch (err) {
+                base64Output.select();
+                document.execCommand('copy');
+                showToast('已复制到剪贴板');
+            }
+        });
+
+        exportEncodingBtn.addEventListener('click', () => {
+            const content = base64Output.value;
+            const encodingLabels = { base64: 'Base64', base32: 'Base32', base16: 'Hex' };
+            const ext = currentEncoding === 'base16' ? 'hex' : currentEncoding;
+            const filename = `${encodingLabels[currentEncoding]}_${fileName.textContent || 'output'}.${ext}.txt`;
+            downloadFile(content, filename);
+        });
+
+        copyExtractBtn.addEventListener('click', async () => {
+            const items = extractItems.querySelectorAll('.extract-item');
+            if (items.length === 0) { showToast('没有可复制的内容'); return; }
+            const text = Array.from(items).map(item => item.textContent).join('\n');
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('已复制 ' + items.length + ' 项');
+            } catch (err) { showToast('复制失败'); }
+        });
+
+        exportExtractBtn.addEventListener('click', () => {
+            const items = extractItems.querySelectorAll('.extract-item');
+            if (items.length === 0) { showToast('没有可导出的内容'); return; }
+            const lines = Array.from(items).map(item => item.dataset.value);
+            const credentialTypes = ['password', 'apikey', 'token', 'privatekey', 'jwt', 'awskey', 'connectionstring', 'bearertoken'];
+            const cryptoTypes = ['aes', 'des', 'rsa', 'hash', 'hmac', 'ecb', 'hexkey', 'md5hash', 'sha'];
+            const isCredential = credentialTypes.some(t => selectedExtractTypes.includes(t));
+            const isCrypto = cryptoTypes.some(t => selectedExtractTypes.includes(t));
+            let typeLabel = 'IDENTITY';
+            if (isCredential) typeLabel = 'CREDENTIAL';
+            else if (isCrypto) typeLabel = 'CRYPTO';
+            let content = `# ${typeLabel} EXTRACTION RESULT\n`;
+            content += `# FILE: ${fileName.textContent}\n`;
+            content += `# TIME: ${new Date().toLocaleString()}\n`;
+            content += `# TYPES: ${selectedExtractTypes.join(', ')}\n`;
+            content += `${'='.repeat(50)}\n\n`;
+            content += lines.join('\n');
+            const prefix = isCrypto ? 'crypto' : (isCredential ? 'credential' : 'extract');
+            downloadFile(content, `${prefix}_${fileName.textContent || 'result'}.txt`);
+        });
+
+        copyCtfBtn.addEventListener('click', async () => {
+            if (ctfResults.length === 0) { showToast('没有可复制的内容'); return; }
+            const flags = ctfResults.filter(r => r.isFlag).map(r => r.value);
+            if (flags.length === 0) { showToast('未找到 Flag'); return; }
+            try {
+                await navigator.clipboard.writeText(flags.join('\n'));
+                showToast('已复制 ' + flags.length + ' 个 Flag');
+            } catch (err) { showToast('复制失败'); }
+        });
+
+        exportCtfBtn.addEventListener('click', () => {
+            if (ctfResults.length === 0) { showToast('没有可导出的内容'); return; }
+            const flags = ctfResults.filter(r => r.isFlag);
+            const keywords = ctfResults.filter(r => !r.isFlag);
+            let content = `# CTF EXTRACTION RESULT\n`;
+            content += `# FILE: ${fileName.textContent}\n`;
+            content += `# TIME: ${new Date().toLocaleString()}\n`;
+            content += `# FLAGS: ${flags.length} | KEYWORDS: ${keywords.length}\n`;
+            content += `${'='.repeat(50)}\n\n`;
+            if (flags.length > 0) {
+                content += `# === FLAGS (${flags.length}) ===\n`;
+                flags.forEach((f, i) => { content += `[${i + 1}] ${f.value}\n`; });
+                content += '\n';
+            }
+            if (keywords.length > 0) {
+                content += `# === KEYWORDS (${keywords.length}) ===\n`;
+                const grouped = {};
+                keywords.forEach(k => { if (!grouped[k.label]) grouped[k.label] = []; grouped[k.label].push(k.value); });
+                for (const [label, values] of Object.entries(grouped)) {
+                    content += `\n## ${label}:\n`;
+                    values.forEach((v, i) => { content += `[${i + 1}] ${v}\n`; });
+                }
+            }
+            const flagCount = flags.length > 0 ? `_${flags.length}flags` : '';
+            downloadFile(content, `ctf_result_${fileName.textContent || 'output'}${flagCount}.txt`);
+        });
+
+        resetBtn.addEventListener('click', reset);
+        resetBtn2.addEventListener('click', reset);
+        resetBtn3.addEventListener('click', reset);
+
+        function reset() {
+            resultSection.classList.remove('show');
+            fileInput.value = '';
+            currentResult = { base64: '', base32: '', base16: '' };
+            rawText = '';
+            ctfResults = [];
+        }
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const uint8Array = new Uint8Array(e.target.result);
+                currentResult.base64 = arrayBufferToBase64(uint8Array);
+                currentResult.base32 = uint8ArrayToBase32(uint8Array);
+                currentResult.base16 = uint8ArrayToBase16(uint8Array);
+                const decoder = new TextDecoder('utf-8', { fatal: false });
+                rawText = decoder.decode(uint8Array);
+                fileName.textContent = file.name;
+                fileType.textContent = file.type || '未知';
+                fileSize.textContent = formatFileSize(file.size);
+                updateOutput();
+                updateExtractResult();
+                updateCtfResult();
+                resultSection.classList.add('show');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function arrayBufferToBase64(uint8Array) {
+            let binary = '';
+            const len = uint8Array.byteLength;
+            for (let i = 0; i < len; i++) binary += String.fromCharCode(uint8Array[i]);
+            return btoa(binary);
+        }
+
+        function uint8ArrayToBase32(uint8Array) {
+            let result = '', bits = 0, value = 0, len = uint8Array.length;
+            for (let i = 0; i < len; i++) {
+                value = (value << 8) | uint8Array[i];
+                bits += 8;
+                while (bits >= 5) { result += BASE32_CHARS[(value >>> (bits - 5)) & 31]; bits -= 5; }
+            }
+            if (bits > 0) result += BASE32_CHARS[(value << (5 - bits)) & 31];
+            return result;
+        }
+
+        function uint8ArrayToBase16(uint8Array) {
+            let result = '';
+            for (let i = 0; i < uint8Array.length; i++) {
+                result += BASE16_CHARS[uint8Array[i] >>> 4];
+                result += BASE16_CHARS[uint8Array[i] & 0x0F];
+            }
+            return result;
+        }
+
+        function updateOutput() {
+            const encodingConfig = {
+                base64: { label: 'Base64 编码', note: '* 输出包含 data URI 前缀' },
+                base32: { label: 'Base32 编码', note: '* 纯 Base32 编码，无前缀' },
+                base16: { label: 'Hex 编码', note: '* 纯十六进制编码，无前缀' }
+            };
+            const result = currentResult[currentEncoding];
+            base64Output.value = result;
+            outputLabel.textContent = encodingConfig[currentEncoding].label;
+            formatNote.textContent = encodingConfig[currentEncoding].note;
+            outputLength.textContent = result.length + ' 字符';
+        }
+
+        function updateExtractResult() {
+            if (!rawText) {
+                extractItems.innerHTML = '<div class="extract-empty">选择提取类型后自动处理文件</div>';
+                extractCount.textContent = '0';
+                return;
+            }
+            const results = {};
+            if (selectedExtractTypes.length === 0) {
+                extractItems.innerHTML = '<div class="extract-empty">请选择至少一种提取类型</div>';
+                extractCount.textContent = '0';
+                return;
+            }
+            selectedExtractTypes.forEach(type => {
+                const pattern = EXTRACT_PATTERNS[type];
+                if (pattern) {
+                    const matches = rawText.match(pattern) || [];
+                    results[type] = [...new Set(matches)];
+                }
+            });
+            let totalCount = 0, html = '';
+            const credentialTypes = ['password', 'apikey', 'token', 'privatekey', 'jwt', 'awskey', 'connectionstring', 'bearertoken'];
+            const cryptoTypes = ['aes', 'des', 'rsa', 'hash', 'hmac', 'ecb', 'hexkey', 'md5hash', 'sha'];
+            const isCredentialMode = credentialTypes.some(t => selectedExtractTypes.includes(t));
+            const isCryptoMode = cryptoTypes.some(t => selectedExtractTypes.includes(t));
+
+            selectedExtractTypes.forEach(type => {
+                const items = results[type] || [];
+                totalCount += items.length;
+                items.forEach(item => {
+                    let itemClass = 'extract-item';
+                    let displayValue = item.length > 60 ? item.substring(0, 60) + '...' : item;
+                    let title = getCryptoTitle(type, item);
+
+                    if (isCredentialMode) {
+                        itemClass = 'extract-item credential';
+                    } else if (isCryptoMode) {
+                        itemClass = 'extract-item crypto';
+                    }
+
+                    if (type === 'ip' && !isCryptoMode) {
+                        const specialIP = getSpecialIPInfo(item);
+                        if (specialIP) {
+                            itemClass = 'extract-item special';
+                            title = specialIP;
+                        } else if (isInternalIP(item)) {
+                            itemClass = 'extract-item internal';
+                            title = '内网 IP 地址';
+                        }
+                    }
+
+                    html += `<span class="${itemClass}" data-value="${escapeHtml(item)}" title="${title}">${escapeHtml(displayValue)}</span>`;
+                });
+            });
+            if (totalCount === 0) {
+                extractItems.innerHTML = '<div class="extract-empty">未找到匹配内容</div>';
+            } else {
+                extractItems.innerHTML = html;
+                extractItems.querySelectorAll('.extract-item').forEach(item => {
+                    item.addEventListener('click', async () => {
+                        try { await navigator.clipboard.writeText(item.dataset.value); showToast('已复制'); }
+                        catch (err) { showToast('复制失败'); }
+                    });
+                });
+            }
+            extractCount.textContent = totalCount;
+        }
+
+        function getCryptoTitle(type, value) {
+            const titles = {
+                aes: 'AES 加密算法 - 高级加密标准，支持 128/192/256 位密钥',
+                des: 'DES/3DES 加密算法 - 数据加密标准（安全性较低）',
+                rsa: 'RSA 加密算法 - 非对称加密，常用于密钥交换和数字签名',
+                hash: '哈希算法 - 单向加密，用于验证数据完整性',
+                hmac: 'HMAC - 基于哈希的消息认证码',
+                ecb: 'ECB 模式 - 电子密码本模式（安全性较低，不建议使用）',
+                hexkey: '可能的 Hex 编码密钥',
+                md5hash: 'MD5 哈希值 - 已被认为不安全，仅用于兼容性',
+                sha: 'SHA 哈希值 - 安全哈希算法家族'
+            };
+            return titles[type] || value;
+        }
+
+        function getSpecialIPInfo(ip) {
+            const specialIPs = {
+                '127.0.0.1': '本地回环地址 (localhost)',
+                '127.0.0.2': '本地回环地址 (localhost)',
+                '0.0.0.0': '监听所有网络接口',
+                '255.255.255.255': '受限广播地址',
+                '224.0.0.1': '多播组成员 (All Hosts)',
+                '224.0.0.2': '多播路由 (All Routers)',
+                '::1': 'IPv6 本地回环地址 (localhost)',
+                '::': 'IPv6 未指定地址'
+            };
+            return specialIPs[ip] || null;
+        }
+
+        function isInternalIP(ip) {
+            const parts = ip.split('.').map(Number);
+            if (parts.length !== 4) return false;
+            if (parts[0] === 10) return true;
+            if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+            if (parts[0] === 192 && parts[1] === 168) return true;
+            return false;
+        }
+
+        function updateCtfResult() {
+            ctfResults = [];
+            if (!rawText) {
+                ctfItems.innerHTML = '<div class="extract-empty">拖拽或选择文件后自动检测</div>';
+                ctfCount.textContent = '0';
+                return;
+            }
+            const seen = new Set();
+            const categories = { flags: [], keywords: [] };
+            for (const [key, config] of Object.entries(CTF_PATTERNS)) {
+                const matches = rawText.match(config.pattern) || [];
+                [...new Set(matches)].forEach(match => {
+                    if (!seen.has(match)) {
+                        seen.add(match);
+                        const result = { type: key, value: match, label: config.label, isFlag: config.isFlag };
+                        ctfResults.push(result);
+                        if (config.isFlag) categories.flags.push(result);
+                        else categories.keywords.push(result);
+                    }
+                });
+            }
+            let html = '';
+            if (categories.flags.length > 0) {
+                html += `<div class="extract-category flags"><div class="extract-category-title">FLAGS (${categories.flags.length})</div><div class="extract-category-items">`;
+                categories.flags.forEach(item => { html += `<span class="extract-item flag" data-value="${escapeHtml(item.value)}">${escapeHtml(item.value)}</span>`; });
+                html += `</div></div>`;
+            }
+            if (categories.keywords.length > 0) {
+                html += `<div class="extract-category"><div class="extract-category-title">KEYWORDS (${categories.keywords.length})</div><div class="extract-category-items">`;
+                categories.keywords.forEach(item => { html += `<span class="extract-item" data-value="${escapeHtml(item.value)}">${escapeHtml(item.value)}</span>`; });
+                html += `</div></div>`;
+            }
+            if (ctfResults.length === 0) {
+                ctfItems.innerHTML = '<div class="extract-empty">未检测到任何 CTF 相关内容</div>';
+            } else {
+                ctfItems.innerHTML = html;
+                ctfItems.querySelectorAll('.extract-item').forEach(item => {
+                    item.addEventListener('click', async () => {
+                        try { await navigator.clipboard.writeText(item.dataset.value); showToast('已复制'); }
+                        catch (err) { showToast('复制失败'); }
+                    });
+                });
+            }
+            ctfCount.textContent = ctfResults.length;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2000);
+        }
+
+        function downloadFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('已导出: ' + filename);
+        }
+    </script>
+</body>
+</html>
